@@ -20,4 +20,4 @@ Book catalog service
  # Документация
 Описание методов сервиса доступно в swagger:  
 ```
-http://localhost:8080/bookshelf/swagger-ui
+http://localhost:8080/bookshelf/swagger-ui/
