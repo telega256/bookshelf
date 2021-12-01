@@ -57,13 +57,16 @@ public class AuthorService {
     public AuthorView create(AuthorBaseReq authorBaseReq) {
         Author authorSave;
         try{
+            // Проверяем есть ли в реестре автор с таким же именем и фамилией
             this.findAuthorByNameAndSurnameOrThrow(authorBaseReq.getName(),authorBaseReq.getSurname());
+            // Если есть, то кидаем исключение
             throw new EntityAlreadyExistsException(
                     messageUtil.getMessage("author.AlreadyExists",
                             authorBaseReq.getName(),
                             authorBaseReq.getSurname()));
         }
         catch(EntityNotFoundException ex){
+            // Если такого же автора в реестре нет, то создаем его
             Author author = new Author();
             this.prepare(author, authorBaseReq);
             authorSave = authorRepo.save(author);
@@ -75,13 +78,15 @@ public class AuthorService {
     @Transactional
     public void delete(Long id) {
         Author author = this.findAuthorByIdOrThrow(id);
+        // Провряем ссылки на автора
         Set<Book> books = author.getBooks();
         if(!books .isEmpty()) {
             books.forEach(book -> {
+                // Если у книги несколько авторов, то удаляем ссылку
                 if(book.getAuthors().size() > 1) {
                     book.getAuthors().remove(author);
                 }
-                else
+                else // Если у книги только один автор, то удаляем книгу
                    bookRepo.delete(book);
             });
         }
@@ -90,6 +95,20 @@ public class AuthorService {
 
     public AuthorView update(Long id, AuthorBaseReq authorBaseReq) {
         Author author = this.findAuthorByIdOrThrow(id);
+        try {
+            // Проверяем есть ли автор с таким же именем и фамилией, но другим id
+            Author authorOld = this.findAuthorByNameAndSurnameOrThrow(
+                    authorBaseReq.getName(), authorBaseReq.getSurname());
+            if (authorOld.getId() != author.getId()) {
+                // Если есть автор с таким же именем и фамилией, но другим id, то кидаем исключение
+                throw new EntityAlreadyExistsException(
+                        messageUtil.getMessage("author.AlreadyExists",
+                                authorBaseReq.getName(),
+                                authorBaseReq.getSurname()));
+            }
+        }
+        catch(EntityNotFoundException ex){/* Пустой блок catch */}
+        // Обновляем автора
         Author newAuthor = this.prepare(author, authorBaseReq);
         Author authorForSave = authorRepo.save(newAuthor);
         return authorToAuthorViewConverter.convert(authorForSave);

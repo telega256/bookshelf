@@ -9,7 +9,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.util.Set;
 
-@Schema(description = "Запрос книги")
+@Schema(description = "Request книги")
 public class BookBaseReq extends BaseReq {
 
     @Schema(description = "Название", example = "Книга")

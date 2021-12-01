@@ -90,7 +90,6 @@ public class BookService {
     }
 
     public Page<BookView> getBooksByAuthor(Pageable pageable, @NotNull AuthorBaseReq authorBaseReq) {
-
         Author author = authorService.findAuthorByNameAndSurnameOrThrow(
                 authorBaseReq.getName(),
                 authorBaseReq.getSurname());
@@ -137,6 +136,7 @@ public class BookService {
     @Transactional
     public void delete(Long id) {
         Book book = this.findBookByIdOrThrow(id);
+        // Предварительно удаляем ссылки на книгу у авторов
         Set<Author> authors = book.getAuthors();
         if(!authors .isEmpty()) {
             authors.forEach(author -> author.getBooks().remove(book));
